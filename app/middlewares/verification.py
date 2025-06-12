@@ -1,7 +1,7 @@
 from fastapi import Request, HTTPException, status
 from functools import wraps
 from app.database.sql import async_session, get_entity_by_id
-from app.database.modal import User, UserRoles
+from app.database.modal import Account, UserRoles
 from app.middlewares.jwt import JWTAuth
 
 def RequireRole(min_role: UserRoles):
@@ -29,7 +29,7 @@ def RequireRole(min_role: UserRoles):
             if not user_id:
                 raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="JWT缺少用户ID")
             async with async_session() as session:
-                user = await get_entity_by_id(session, User, user_id)
+                user = await get_entity_by_id(session, Account, user_id)
                 if not user:
                     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="用户不存在")
                 if user.jwt != token:

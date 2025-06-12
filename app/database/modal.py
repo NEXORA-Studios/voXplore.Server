@@ -31,11 +31,12 @@ class GameType(enum.StrEnum):
     SPELLING = "spelling"
 
 # 用户模型
-class User(SQLModel, table=True):
+class Account(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     username: str = Field(unique=True, index=True)
     password_hash: str
     email: str = Field(unique=True, index=True)
+    jwt: str = Field(default=None, nullable=True)
     role: UserRoles
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     created_groups: List["StudyGroup"] = Relationship(back_populates="creator")
@@ -48,19 +49,19 @@ class StudyGroup(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str
     description: Optional[str] = None
-    created_by: int = Field(foreign_key="user.id")
+    created_by: int = Field(foreign_key="account.id")
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    creator: User = Relationship(back_populates="created_groups")
+    creator: Account = Relationship(back_populates="created_groups")
     members: List["GroupMember"] = Relationship(back_populates="group")
     game_sessions: List["GameSession"] = Relationship(back_populates="group")
 
 # 小组成员关系模型
 class GroupMember(SQLModel, table=True):
     group_id: int = Field(foreign_key="studygroup.id", primary_key=True)
-    user_id: int = Field(foreign_key="user.id", primary_key=True)
+    user_id: int = Field(foreign_key="account.id", primary_key=True)
     joined_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     group: StudyGroup = Relationship(back_populates="members")
-    user: User = Relationship(back_populates="group_memberships")
+    user: Account = Relationship(back_populates="group_memberships")
 
 # 词汇模型
 class Vocabulary(SQLModel, table=True):
@@ -74,12 +75,12 @@ class Vocabulary(SQLModel, table=True):
 
 # 学习进度模型
 class LearningProgress(SQLModel, table=True):
-    user_id: int = Field(foreign_key="user.id", primary_key=True)
+    user_id: int = Field(foreign_key="account.id", primary_key=True)
     vocab_id: int = Field(foreign_key="vocabulary.id", primary_key=True)
     mastery_level: MasteryLevel
     last_reviewed: Optional[datetime] = None
     next_review: Optional[datetime] = None
-    user: User = Relationship(back_populates="learning_progresses")
+    user: Account = Relationship(back_populates="learning_progresses")
     vocabulary: Vocabulary = Relationship(back_populates="learning_progresses")
 
 # 游戏会话模型
@@ -95,7 +96,7 @@ class GameSession(SQLModel, table=True):
 # 游戏成绩模型
 class GameScore(SQLModel, table=True):
     session_id: int = Field(foreign_key="gamesession.id", primary_key=True)
-    user_id: int = Field(foreign_key="user.id", primary_key=True)
+    user_id: int = Field(foreign_key="account.id", primary_key=True)
     score: int
     session: GameSession = Relationship(back_populates="scores")
-    user: User = Relationship(back_populates="game_scores")
+    user: Account = Relationship(back_populates="game_scores")

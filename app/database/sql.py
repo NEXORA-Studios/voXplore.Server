@@ -2,10 +2,13 @@ import os
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 from .modal import * # type: ignore # 仅导入模型，实际不使用
+from pathlib import Path
 
 # 全局变量，方便其他模块使用
-engine = None 
-async_session = None
+db_path = Path(__file__).resolve().parent.parent.parent / "data" / "app.db"
+DATABASE_URL = f"sqlite+aiosqlite:///{db_path.as_posix()}"
+engine = create_async_engine(DATABASE_URL, echo=True, future=True)
+async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
 from sqlmodel import SQLModel
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -13,13 +16,6 @@ from typing import Optional, List, Type, TypeVar
 
 # 通用类型变量，方便通用读取函数
 T = TypeVar("T", bound=SQLModel)
-
-
-async def init_engine(path: str):
-    global engine, async_session
-    DATABASE_URL = f"sqlite+aiosqlite:///" + os.path.join(path, "data", "app.db")
-    engine = create_async_engine(DATABASE_URL, echo=True, future=True)
-    async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
 # 初始化数据库（创建所有表）
 async def init_db():
