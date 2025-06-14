@@ -1,0 +1,12 @@
+This project includes the ECDICT dictionary database and Python scripts from the repository:
+skywind3000/ECDICT
+https://github.com/skywind3000/ECDICT
+
+These components are licensed under the MIT License.
+
+Included files and their locations:
+- (root)/data/stardict.db  
+  (Note: This file is not included in the Git repository due to its large size)
+- (root)/app/modules/stardict.py
+
+The MIT License applies only to the ECDICT database and its associated Python scripts.

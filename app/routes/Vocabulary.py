@@ -26,7 +26,7 @@ async def record_progress(progress_data: dict, request: Request):
         current_user = request.state.user
         
         # 检查词汇是否存在
-        vocab = await get_entity_by_id(session, Vocabulary, progress_data["vocab_id"])
+        vocab = await session.get(Vocabulary, progress_data["vocab_id"])
         if not vocab:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,

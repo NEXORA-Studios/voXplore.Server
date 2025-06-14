@@ -9,7 +9,8 @@ wheels/
 # Development environments
 .venv
 .env
-docs/
+docs/*
+!docs/Standrads.md
 
 # Running environments
 data/

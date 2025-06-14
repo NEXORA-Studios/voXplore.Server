@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from app.database.sql import init_db
-from app.routes import Base, User, Group, Vocabulary
+from app.routes import Base, User
 from utils.logging import LoggerFactory
 
 # Logger
@@ -29,5 +29,3 @@ app.add_middleware(
 
 app.include_router(Base.router)
 app.include_router(User.router)
-app.include_router(Group.router)
-app.include_router(Vocabulary.router)

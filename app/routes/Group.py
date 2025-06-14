@@ -1,14 +1,15 @@
 from fastapi import APIRouter, Request, HTTPException, status
+from sqlmodel import select
 
 from app.database.sql import async_session, get_entities
-from app.database.modal import StudyGroup, GroupMember, UserRoles
+from app.database.modal import StudyGroup, GroupMember, UserRoles, Account
 from app.middlewares.verification import RequireRole
 from utils.logging import logger
 
 router = APIRouter(prefix="/api/groups", tags=["Study Groups"])
 
 @router.post("/")
-@RequireRole(UserRoles.STUDENT)
+@RequireRole(UserRoles.TEACHER)
 async def create_group(group_data: dict, request: Request):
     """创建学习小组接口"""
     async with async_session() as session:
@@ -36,7 +37,7 @@ async def create_group(group_data: dict, request: Request):
         return {"message": "Group created successfully", "group_id": new_group.id}
 
 @router.get("/{group_id}/members")
-@RequireRole(UserRoles.STUDENT)
+@RequireRole(UserRoles.TEACHER)
 async def get_group_members(group_id: int):
     """获取小组成员接口"""
     async with async_session() as session:
@@ -49,7 +50,7 @@ async def get_group_members(group_id: int):
         
         member_list = []
         for member in members:
-            user = await get_entity_by_id(session, User, member.user_id)
+            user = await session.get(Account, member.user_id)
             member_list.append({
                 "user_id": user.id,
                 "username": user.username,
@@ -60,12 +61,12 @@ async def get_group_members(group_id: int):
         return {"members": member_list}
 
 @router.post("/{group_id}/invite")
-@RequireRole(UserRoles.STUDENT)
+@RequireRole(UserRoles.TEACHER)
 async def invite_member(group_id: int, invite_data: dict, request: Request):
     """邀请成员加入小组接口"""
     async with async_session() as session:
         # 验证小组是否存在
-        group = await get_entity_by_id(session, StudyGroup, group_id)
+        group = await session.get(StudyGroup, group_id)
         if not group:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -73,7 +74,7 @@ async def invite_member(group_id: int, invite_data: dict, request: Request):
             )
         
         # 获取被邀请用户
-        invited_user = await get_entity_by_id(session, User, username=invite_data["username"])
+        invited_user = await session.execute(select(Account).where(Account.username == invite_data["username"])).scalar_one_or_none()
         if not invited_user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,

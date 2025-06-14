@@ -57,7 +57,7 @@ async def login(data: LoginRequest, db: AsyncSession = Depends(get_db)):
     return {"msg": "Successful", "username": user.username, "user_id": user.id, "role": user.role, "token": token}
 
 @router.get("/users/{user_id}")
-@RequireRole(UserRoles.STUDENT)
+@RequireRole(UserRoles.NEW_USER)
 async def get_user(user_id: int):
     """获取用户信息接口"""
     async with async_session() as session:
